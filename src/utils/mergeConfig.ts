@@ -8,6 +8,9 @@ const merge = (original: any, next: any): any => {
 const isObject = (obj: object): boolean =>
 	Array.isArray(obj) || typeof obj !== 'object'
 
+const isFunction = (value: any): value is Function =>
+	value instanceof Function
+
 /**
  * mergeConfig
  *
@@ -52,12 +55,12 @@ export default (initConfig: R.InitConfig & { name: string }): R.Config => {
 			],
 			[
 				config.redux.combineReducers &&
-					typeof config.redux.combineReducers !== 'function',
+				typeof config.redux.combineReducers !== 'function',
 				'init config.redux.combineReducers must be a function',
 			],
 			[
 				config.redux.createStore &&
-					typeof config.redux.createStore !== 'function',
+				typeof config.redux.createStore !== 'function',
 				'init config.redux.createStore must be a function',
 			],
 		])
@@ -65,40 +68,42 @@ export default (initConfig: R.InitConfig & { name: string }): R.Config => {
 
 	// defaults
 	for (const plugin of config.plugins) {
-		if (plugin.config) {
+		let pluginConfig = isFunction(plugin.config) ? plugin.config(config) : plugin.config
+
+		if (pluginConfig) {
 			// models
-			const models: R.Models = merge(config.models, plugin.config.models)
+			const models: R.Models = merge(config.models, pluginConfig.models)
 			config.models = models
 
 			// plugins
-			config.plugins = [...config.plugins, ...(plugin.config.plugins || [])]
+			config.plugins = [...config.plugins, ...(pluginConfig.plugins || [])]
 
 			// redux
-			if (plugin.config.redux) {
+			if (pluginConfig.redux) {
 				config.redux.initialState = merge(
 					config.redux.initialState,
-					plugin.config.redux.initialState
+					pluginConfig.redux.initialState
 				)
 				config.redux.reducers = merge(
 					config.redux.reducers,
-					plugin.config.redux.reducers
+					pluginConfig.redux.reducers
 				)
 				config.redux.rootReducers = merge(
 					config.redux.rootReducers,
-					plugin.config.redux.reducers
+					pluginConfig.redux.reducers
 				)
 				config.redux.enhancers = [
 					...config.redux.enhancers,
-					...(plugin.config.redux.enhancers || []),
+					...(pluginConfig.redux.enhancers || []),
 				]
 				config.redux.middlewares = [
 					...config.redux.middlewares,
-					...(plugin.config.redux.middlewares || []),
+					...(pluginConfig.redux.middlewares || []),
 				]
 				config.redux.combineReducers =
-					config.redux.combineReducers || plugin.config.redux.combineReducers
+					config.redux.combineReducers || pluginConfig.redux.combineReducers
 				config.redux.createStore =
-					config.redux.createStore || plugin.config.redux.createStore
+					config.redux.createStore || pluginConfig.redux.createStore
 			}
 		}
 	}

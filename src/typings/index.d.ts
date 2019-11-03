@@ -187,8 +187,12 @@ export interface PluginFactory extends Plugin {
 	create(plugin: Plugin): Plugin
 }
 
+export interface MergeWithCurrentConfig<M extends Models = Models> {
+	(currentConfig: InitConfig<M>): InitConfig<M>
+}
+
 export interface Plugin<M extends Models = Models, A extends Action = Action> {
-	config?: InitConfig<M>
+	config?: InitConfig<M> | MergeWithCurrentConfig<M>
 	onInit?: () => void
 	onStoreCreated?: (store: RematchStore<M, A>) => void
 	onModel?: ModelHook
