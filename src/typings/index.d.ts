@@ -188,7 +188,7 @@ export interface PluginFactory extends Plugin {
 }
 
 export interface Plugin<M extends Models = Models, A extends Action = Action> {
-	config?: InitConfig<M>
+	config?: InitConfig<M> | ((initConfig: InitConfig<M>) => InitConfig<M>)
 	onInit?: () => void
 	onStoreCreated?: (store: RematchStore<M, A>) => void
 	onModel?: ModelHook
