@@ -68,7 +68,7 @@ export default (initConfig: R.InitConfig & { name: string }): R.Config => {
 
 	// defaults
 	for (const plugin of config.plugins) {
-		let pluginConfig = isFunction(plugin.config) ? plugin.config(config) : plugin.config
+		const pluginConfig = isFunction(plugin.config) ? plugin.config(config) : plugin.config
 
 		if (pluginConfig) {
 			// models
